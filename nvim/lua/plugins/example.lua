@@ -192,31 +192,31 @@ return {
         callback = function(args)
           local client = vim.lsp.get_client_by_id(args.data.client_id)
           if client and client.name == "jdtls" then
-            local wk = require("which-key")
-            wk.register({
-              ["<leader>cx"] = { name = "+extract" },
-              ["<leader>cxv"] = { require("jdtls").extract_variable_all, "Extract Variable" },
-              ["<leader>cxc"] = { require("jdtls").extract_constant, "Extract Constant" },
-              ["gs"] = { require("jdtls").super_implementation, "Goto Super" },
-              ["gS"] = { require("jdtls.tests").goto_subjects, "Goto Subjects" },
-              ["<leader>co"] = { require("jdtls").organize_imports, "Organize Imports" },
-            }, { mode = "n", buffer = args.buf })
-            wk.register({
-              ["<leader>c"] = { name = "+code" },
-              ["<leader>cx"] = { name = "+extract" },
-              ["<leader>cxm"] = {
-                [[<ESC><CMD>lua require('jdtls').extract_method(true)<CR>]],
-                "Extract Method",
-              },
-              ["<leader>cxv"] = {
-                [[<ESC><CMD>lua require('jdtls').extract_variable_all(true)<CR>]],
-                "Extract Variable",
-              },
-              ["<leader>cxc"] = {
-                [[<ESC><CMD>lua require('jdtls').extract_constant(true)<CR>]],
-                "Extract Constant",
-              },
-            }, { mode = "v", buffer = args.buf })
+            -- local wk = require("which-key")
+            -- wk.register({
+            --   ["<leader>cx"] = { name = "+extract" },
+            --   ["<leader>cxv"] = { require("jdtls").extract_variable_all, "Extract Variable" },
+            --   ["<leader>cxc"] = { require("jdtls").extract_constant, "Extract Constant" },
+            --   ["gs"] = { require("jdtls").super_implementation, "Goto Super" },
+            --   ["gS"] = { require("jdtls.tests").goto_subjects, "Goto Subjects" },
+            --   ["<leader>co"] = { require("jdtls").organize_imports, "Organize Imports" },
+            -- }, { mode = "n", buffer = args.buf })
+            -- wk.register({
+            --   ["<leader>c"] = { name = "+code" },
+            --   ["<leader>cx"] = { name = "+extract" },
+            --   ["<leader>cxm"] = {
+            --     [[<ESC><CMD>lua require('jdtls').extract_method(true)<CR>]],
+            --     "Extract Method",
+            --   },
+            --   ["<leader>cxv"] = {
+            --     [[<ESC><CMD>lua require('jdtls').extract_variable_all(true)<CR>]],
+            --     "Extract Variable",
+            --   },
+            --   ["<leader>cxc"] = {
+            --     [[<ESC><CMD>lua require('jdtls').extract_constant(true)<CR>]],
+            --     "Extract Constant",
+            --   },
+            -- }, { mode = "v", buffer = args.buf })
   
             if opts.dap and Util.has("nvim-dap") and mason_registry.is_installed("java-debug-adapter") then
               -- custom init for Java debugger
@@ -273,26 +273,7 @@ return {
       },
       -- make sure mason installs the server
       servers = {
-        jdtls = {
-          settings = {
-            java = {
-              configuration = {
-                runtimes = {
-                  {
-                    name = "JavaSE-21",
-                    path = "${HOME}/.sdkman/candidates/java/21.0.1-graalce",
-                    -- default = true,
-                  },
-                  {
-                    name = "JavaSE-17",
-                    path = "${HOME}/.sdkman/candidates/java/17.0.7-oracle",
-                    -- default = true,
-                  },
-                }
-              }
-            }
-          }
-        },
+        jdtls = {},
       },
     },
   },
@@ -309,7 +290,7 @@ return {
       },
     },
   },
-
+  
   -- add tsserver and setup with typescript.nvim instead of lspconfig
   {
     "neovim/nvim-lspconfig",
@@ -318,8 +299,8 @@ return {
       init = function()
         require("lazyvim.util").lsp.on_attach(function(_, buffer)
           -- stylua: ignore
-          vim.keymap.set( "n", "<leader>co", "TypescriptOrganizeImports", { buffer = buffer, desc = "Organize Imports" })
-          vim.keymap.set("n", "<leader>cR", "TypescriptRenameFile", { desc = "Rename File", buffer = buffer })
+          -- vim.keymap.set( "n", "<leader>co", "TypescriptOrganizeImports", { buffer = buffer, desc = "Organize Imports" })
+          -- vim.keymap.set("n", "<leader>cR", "TypescriptRenameFile", { desc = "Rename File", buffer = buffer })
         end)
       end,
     },
