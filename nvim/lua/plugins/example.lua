@@ -1,5 +1,24 @@
 -- since this is just an example spec, don't actually load anything here and return an empty spec
 -- stylua: ignore
+local Util = require("lazyvim.util")
+
+-- This is the same as in lspconfig.server_configurations.jdtls, but avoids
+-- needing to require that when this module loads.
+local java_filetypes = { "java" }
+
+-- Utility function to extend or override a config table, similar to the way
+-- that Plugin.opts works.
+---@param config table
+---@param custom function | table | nil
+local function extend_or_override(config, custom, ...)
+  if type(custom) == "function" then
+    config = custom(config, ...) or config
+  elseif custom then
+    config = vim.tbl_deep_extend("force", config, custom) --[[@as table]]
+  end
+  return config
+end
+
 if true then return {} end
 
 -- every spec file under the "plugins" directory will be loaded automatically by lazy.nvim
@@ -36,6 +55,21 @@ return {
     cmd = "SymbolsOutline",
     keys = { { "<leader>cs", "<cmd>SymbolsOutline<cr>", desc = "Symbols Outline" } },
     config = true,
+  },
+
+  -- Ensure java debugger and test packages are installed.
+  {
+    "mfussenegger/nvim-dap",
+    optional = true,
+    dependencies = {
+      {
+        "williamboman/mason.nvim",
+        opts = function(_, opts)
+          opts.ensure_installed = opts.ensure_installed or {}
+          vim.list_extend(opts.ensure_installed, { "java-test", "java-debug-adapter" })
+        end,
+      },
+    },
   },
 
   -- override nvim-cmp and add cmp-emoji
@@ -89,6 +123,59 @@ return {
     ft = java_filetypes,
     opts = function()
       return {
+        setup = {
+          settings = {
+            java = {
+              signatureHelp = { enabled = true },
+              contentProvider = { preferred = 'fernflower' },
+              completion = {
+                favoriteStaticMembers = {
+                  "org.springframework.*",
+                  "org.junit.jupiter.api.Assertions.*",
+                  "java.util.Objects.requireNonNull",
+                  "java.util.Objects.requireNonNullElse",
+                  "org.mockito.Mockito.*"
+                },
+                filteredTypes = {
+                  "com.sun.*",
+                  "io.micrometer.shaded.*",
+                  "java.awt.*",
+                  "jdk.*",
+                  "sun.*",
+                },
+              },
+              sources = {
+                organizeImports = {
+                  starThreshold = 9999,
+                  staticStarThreshold = 9999,
+                },
+              },
+              codeGeneration = {
+                toString = {
+                  template = "${object.className}{${member.name()}=${member.value}, ${otherMembers}}"
+                },
+                hashCodeEquals = {
+                  useJava7Objects = true,
+                },
+                useBlocks = true,
+              },
+              configuration = {
+                runtimes = {
+                  {
+                    name = "JavaSE-21",
+                    path = "${HOME}/.sdkman/candidates/java/21.0.1-graalce",
+                    -- default = true,
+                  },
+                  {
+                    name = "JavaSE-17",
+                    path = "${HOME}/.sdkman/candidates/java/17.0.7-oracle",
+                    -- default = true,
+                  },
+                }
+              }
+            }
+          }
+        },
         -- How to find the root dir for a given filename. The default comes from
         -- lspconfig which provides a function specifically for java projects.
         root_dir = require("lspconfig.server_configurations.jdtls").default_config.root_dir,
@@ -192,31 +279,31 @@ return {
         callback = function(args)
           local client = vim.lsp.get_client_by_id(args.data.client_id)
           if client and client.name == "jdtls" then
-            -- local wk = require("which-key")
-            -- wk.register({
-            --   ["<leader>cx"] = { name = "+extract" },
-            --   ["<leader>cxv"] = { require("jdtls").extract_variable_all, "Extract Variable" },
-            --   ["<leader>cxc"] = { require("jdtls").extract_constant, "Extract Constant" },
-            --   ["gs"] = { require("jdtls").super_implementation, "Goto Super" },
-            --   ["gS"] = { require("jdtls.tests").goto_subjects, "Goto Subjects" },
-            --   ["<leader>co"] = { require("jdtls").organize_imports, "Organize Imports" },
-            -- }, { mode = "n", buffer = args.buf })
-            -- wk.register({
-            --   ["<leader>c"] = { name = "+code" },
-            --   ["<leader>cx"] = { name = "+extract" },
-            --   ["<leader>cxm"] = {
-            --     [[<ESC><CMD>lua require('jdtls').extract_method(true)<CR>]],
-            --     "Extract Method",
-            --   },
-            --   ["<leader>cxv"] = {
-            --     [[<ESC><CMD>lua require('jdtls').extract_variable_all(true)<CR>]],
-            --     "Extract Variable",
-            --   },
-            --   ["<leader>cxc"] = {
-            --     [[<ESC><CMD>lua require('jdtls').extract_constant(true)<CR>]],
-            --     "Extract Constant",
-            --   },
-            -- }, { mode = "v", buffer = args.buf })
+            local wk = require("which-key")
+            wk.register({
+              ["<leader>cx"] = { name = "+extract" },
+              ["<leader>cxv"] = { require("jdtls").extract_variable_all, "Extract Variable" },
+              ["<leader>cxc"] = { require("jdtls").extract_constant, "Extract Constant" },
+              ["gs"] = { require("jdtls").super_implementation, "Goto Super" },
+              ["gS"] = { require("jdtls.tests").goto_subjects, "Goto Subjects" },
+              ["<leader>co"] = { require("jdtls").organize_imports, "Organize Imports" },
+            }, { mode = "n", buffer = args.buf })
+            wk.register({
+              ["<leader>c"] = { name = "+code" },
+              ["<leader>cx"] = { name = "+extract" },
+              ["<leader>cxm"] = {
+                [[<ESC><CMD>lua require('jdtls').extract_method(true)<CR>]],
+                "Extract Method",
+              },
+              ["<leader>cxv"] = {
+                [[<ESC><CMD>lua require('jdtls').extract_variable_all(true)<CR>]],
+                "Extract Variable",
+              },
+              ["<leader>cxc"] = {
+                [[<ESC><CMD>lua require('jdtls').extract_constant(true)<CR>]],
+                "Extract Constant",
+              },
+            }, { mode = "v", buffer = args.buf })
   
             if opts.dap and Util.has("nvim-dap") and mason_registry.is_installed("java-debug-adapter") then
               -- custom init for Java debugger
@@ -247,49 +334,6 @@ return {
       attach_jdtls()
     end,
   },
-
-  {
-    "neovim/nvim-lspconfig",
-    opts = {
-      setup = {
-        settings = {
-          java = {
-            configuration = {
-              runtimes = {
-                {
-                  name = "JavaSE-21",
-                  path = "${HOME}/.sdkman/candidates/java/21.0.1-graalce",
-                  -- default = true,
-                },
-                {
-                  name = "JavaSE-17",
-                  path = "${HOME}/.sdkman/candidates/java/17.0.7-oracle",
-                  -- default = true,
-                },
-              }
-            }
-          }
-        }
-      },
-      -- make sure mason installs the server
-      servers = {
-        jdtls = {},
-      },
-    },
-  },
-
-  -- add pyright to lspconfig
-  {
-    "neovim/nvim-lspconfig",
-    ---@class PluginLspOpts
-    opts = {
-      ---@type lspconfig.options
-      servers = {
-        -- pyright will be automatically installed with mason and loaded with lspconfig
-        pyright = {},
-      },
-    },
-  },
   
   -- add tsserver and setup with typescript.nvim instead of lspconfig
   {
@@ -308,6 +352,7 @@ return {
     opts = {
       ---@type lspconfig.options
       servers = {
+        jdtls = {},
         -- tsserver will be automatically installed with mason and loaded with lspconfig
         tsserver = {},
       },
@@ -315,6 +360,9 @@ return {
       -- return true if you don't want this server to be setup with lspconfig
       ---@type table<string, fun(server:string, opts:_.lspconfig.options):boolean?>
       setup = {
+        jdtls = function()
+          return true -- avoid duplicate java servers
+        end,
         -- example to setup with typescript.nvim
         tsserver = function(_, opts)
           require("typescript").setup({ server = opts })
