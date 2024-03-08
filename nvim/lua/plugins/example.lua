@@ -390,6 +390,7 @@ return {
         "lua",
         "markdown",
         "markdown_inline",
+        "java",
         "python",
         "query",
         "regex",
