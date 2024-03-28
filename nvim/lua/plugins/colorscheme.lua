@@ -1,12 +1,20 @@
 return {
-  -- add dracula
-  { "Mofiqul/dracula.nvim" },
+  {
+    "Mofiqul/adwaita.nvim",
+    lazy = false,
+    priority = 1000,
+  },
 
-  -- Configure LazyVim to load dracula
   {
     "LazyVim/LazyVim",
     opts = {
-      colorscheme = "dracula",
+      colorscheme = "adwaita",
     },
+    config = function()
+        -- vim.g.adwaita_darker = true             -- for darker version
+        -- vim.g.adwaita_disable_cursorline = true -- to disable cursorline
+        -- vim.g.adwaita_transparent = true        -- makes the background transparent
+        vim.cmd('colorscheme adwaita')
+    end
   },
 }
