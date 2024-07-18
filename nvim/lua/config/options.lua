@@ -8,6 +8,9 @@ vim.g.maplocalleader = "\\"
 -- Enable LazyVim auto format
 vim.g.autoformat = false
 
+-- vim.cmd [[ set autochdir ]]
+vim.opt.autochdir = true
+
 -- LazyVim root dir detection
 -- Each entry can be:
 -- * the name of a detector function like `lsp` or `cwd`
